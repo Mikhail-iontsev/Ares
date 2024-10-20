@@ -14,6 +14,8 @@ are open-source. [Learn more about OHDSI](https://www.ohdsi.org).
 
 ## Installation
 
+Test
+
 ### Requirements
 
 - git client ([GitHub Desktop](https://desktop.github.com/) recommended). On macOS git comes preinstalled and can be
