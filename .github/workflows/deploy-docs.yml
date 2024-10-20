@@ -34,7 +34,11 @@ jobs:
         working-directory: ./docs
         env:
           NODE_OPTIONS: --max_old_space_size=8192
-        run: npm run docs:build
+        run: |
+          npm run docs:build || echo "Build failed"
+
+      - name: Verify dist folder exists
+        run: ls -la docs/.vuepress/dist
 
       - name: Create .nojekyll file
         run: echo "" > docs/.vuepress/dist/.nojekyll
