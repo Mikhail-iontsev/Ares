@@ -4,7 +4,7 @@ import { viteBundler } from '@vuepress/bundler-vite'
 
 export default defineUserConfig({
   lang: 'en-US',
-
+  base: '/<REPO_NAME>/',
   title: 'Ares',
   description: 'A Research Exploration System',
 
