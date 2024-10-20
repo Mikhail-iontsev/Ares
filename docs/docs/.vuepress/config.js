@@ -17,4 +17,5 @@ export default defineUserConfig({
 
   }),
   bundler: viteBundler(),
+  dest: '.vuepress/dist'
 })
