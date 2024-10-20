@@ -9,7 +9,7 @@ export default defineUserConfig({
   description: 'A Research Exploration System',
 
   theme: defaultTheme({
-    logo: '../icon.png',
+    logo: '/icon.png',
 
     navbar: ['/', '/ares-docs'],
     colorMode: 'dark',
