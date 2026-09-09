@@ -59,8 +59,8 @@ jobs:
       - name: Extract sample data
         run: |
           test -f sample/frontend/data.zip || { echo "sample/frontend/data.zip not found"; exit 1; }
-          mkdir -p dist/public/data
-          unzip -o sample/frontend/data.zip -d dist/public/data/
+          mkdir -p dist/public
+          unzip -o sample/frontend/data.zip -d dist/public/
 
       - name: Package
         env:
