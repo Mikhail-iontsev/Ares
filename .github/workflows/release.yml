@@ -53,13 +53,13 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
+      - name: Build
+        run: pnpm run build
+
       - name: Extract sample data
         run: |
           test -f sample/frontend/data.zip || { echo "sample/frontend/data.zip not found"; exit 1; }
-          unzip -o sample/frontend/data.zip -d frontend/public/
-
-      - name: Build
-        run: pnpm run build
+          unzip -o sample/frontend/data.zip -d dist/public/data/
 
       - name: Package
         env:
