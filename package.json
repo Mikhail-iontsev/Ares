@@ -4,16 +4,17 @@
   "description": "Apex Research Exploration System (ARES)",
   "author": "Frank DeFalco",
   "private": true,
-  "workspaces": [
-    "./frontend",
-    "./backend",
-    "./docs"
-  ],
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
   "scripts": {
-    "serve": "concurrently \"npm run serve --workspace=frontend\" \"npm run start --workspace=backend\"",
-    "build": "npm run build -w frontend"
+    "serve": "concurrently \"pnpm --filter=./frontend run serve\" \"pnpm --filter=./backend run start\"",
+    "build": "pnpm --filter=./frontend run build",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.2.3"
   }
 }

@@ -1,10 +1,10 @@
 <template>
-  <div class="flex flex-row gap-5">
-    <InputSwitch v-model="notesMode" />
+  <div class="flex flex-row items-center justify-between">
     <div>
-      <h3 class="text-lg leading-none">{{ notesMode ? "On" : "Off" }}</h3>
-      <p class="font-light">Switch default notes mode</p>
+      <p class="text-base font-medium leading-none">Default notes mode</p>
+      <p class="setting-desc">Open notes panel by default</p>
     </div>
+    <InputSwitch v-model="notesMode" />
   </div>
 </template>
 
@@ -26,4 +26,10 @@ const notesMode = computed({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.setting-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+</style>

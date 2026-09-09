@@ -8,10 +8,14 @@ class Environment {
   CDM_NETWORK_NAME = null;
   ARES_API_URL = null;
   USE_ANNOTATIONS_API: null;
+  CHARACTERIZATION: null;
   load() {
     const promise: Promise<AxiosResponse> = axios.get(envUrl);
     return promise.then((res) => {
       Object.assign(this, res.data);
+      if (!this.ARES_API_URL) {
+        this.ARES_API_URL = window.location.origin + "/ares-api";
+      }
     });
   }
 }

@@ -9,31 +9,33 @@
       :height="totalHeight"
       :chart-spec="getEChartsOptionRecordProportionByAgeSexYear"
     />
-    <div v-if="showTable" class="p-4">
-      <DataTable
-        :striped-rows="store.getters.getSettings.strippedRows"
-        removable-sort
-        size="small"
-        paginator
-        currentPageReportTemplate="{first} to {last} of {totalRecords}"
-        paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
-        :value="data"
-        :rows="5"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-      >
-        <Column sortable header="Sex" field="SERIES_NAME"> </Column>
-        <Column sortable header="Age Decile" field="TRELLIS_NAME"> </Column>
-        <Column sortable header="Year" field="X_CALENDAR_YEAR"> </Column>
-        <Column
-          style="text-align: end"
-          :pt="{ headerContent: 'justify-end' }"
-          sortable
-          header="Record Proportion Per 1000"
-          field="Y_PREVALENCE_1000PP"
+    <CollapseTransition>
+      <div v-if="showTable" class="p-4">
+        <DataTable
+          :striped-rows="store.getters.getSettings.strippedRows"
+          removable-sort
+          size="small"
+          paginator
+          currentPageReportTemplate="{first} to {last} of {totalRecords}"
+          paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+          :value="data"
+          :rows="5"
+          :rowsPerPageOptions="[5, 10, 20, 50]"
         >
-        </Column>
-      </DataTable>
-    </div>
+          <Column sortable header="Sex" field="SERIES_NAME"> </Column>
+          <Column sortable header="Age Decile" field="TRELLIS_NAME"> </Column>
+          <Column sortable header="Year" field="X_CALENDAR_YEAR"> </Column>
+          <Column
+            style="text-align: end"
+            :pt="{ headerContent: 'justify-end' }"
+            sortable
+            header="Record Proportion Per 1000"
+            field="Y_PREVALENCE_1000PP"
+          >
+          </Column>
+        </DataTable>
+      </div>
+    </CollapseTransition>
     <template #footer>
       <div class="flex flex-row gap-2">
         <ChartActionIcon
@@ -41,11 +43,11 @@
           :icon="mdiCodeBraces"
           tooltip="View Export Query"
           @iconClicked="
-            helpers.openNewTab(
+            openNewTab(
               links.getSqlQueryLink(
                 store.getters.getQueryIndex[route.name.toUpperCase()]
-                  .PREVALENCE_BY_GENDER_AGE_YEAR[0]
-              )
+                  .PREVALENCE_BY_GENDER_AGE_YEAR[0],
+              ),
             )
           "
         />
@@ -58,16 +60,16 @@
 import { links } from "@/shared/config/links";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
-import ChartHeader from "@/widgets/chart/ui/ChartHeader.vue";
-import { helpers } from "@/shared/lib/mixins";
-import ChartActionIcon from "@/entities/toggleIcon/ToggleIcon.vue";
+import ChartHeader from "@/widgets/echarts/chartHeader";
+import ChartActionIcon from "@/shared/ui/toggleIcon";
 import Panel from "primevue/panel";
 import { mdiCodeBraces } from "@mdi/js";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import { computed, ref } from "vue";
-import Echarts from "@/widgets/echarts/Echarts.vue";
+import Echarts from "@/widgets/echarts/echarts";
 import getEChartsOptionRecordProportionByAgeSexYear from "@/pages/reports/release/DeathReport/charts/RecordCountProportionByAgeSexYear/recordCountProportionByAgeSexYear";
+import { getValuesArray, openNewTab } from "@/shared/lib/utils";
 
 //todo: fix this chart
 
@@ -84,7 +86,7 @@ const data = computed(() => {
   return store.getters.getData.PREVALENCE_BY_GENDER_AGE_YEAR;
 });
 
-const trellis = helpers.getValuesArray(data.value, "TRELLIS_NAME", true);
+const trellis = getValuesArray(data.value, "TRELLIS_NAME", true);
 
 const facetCount = trellis.length;
 const perFacetHeight = 102;

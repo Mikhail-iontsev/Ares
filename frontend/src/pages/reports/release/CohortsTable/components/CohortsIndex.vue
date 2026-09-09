@@ -88,9 +88,9 @@ import InputGroup from "primevue/inputgroup";
 import InputGroupAddon from "primevue/inputgroupaddon";
 import { FilterMatchMode } from "primevue/api";
 import { COHORT_INDEX } from "@/shared/config/files";
-import { formatComma } from "@/shared/lib/mixins/methods/formatComma";
+import { formatComma } from "@/shared/lib/formatters";
 import { mdiCompareHorizontal } from "@mdi/js";
-import ChartActionIcon from "@/entities/toggleIcon/ToggleIcon.vue";
+import ChartActionIcon from "@/shared/ui/toggleIcon";
 
 const store = useStore();
 const route = useRoute();

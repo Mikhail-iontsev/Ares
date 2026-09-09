@@ -26,10 +26,18 @@ import apiService from "@/shared/api/axios/apiService";
 import getFilePath from "@/shared/api/axios/files";
 import { NOTES } from "@/shared/config/files";
 import JSZip from "jszip";
-import { saveAs } from "file-saver";
+import { downloadBlob } from "@/shared/lib/utils";
 import { AnnotationsService } from "@/shared/api/aresApi/services/annotationsService";
 import environment from "@/shared/api/environment";
 import { chartNameIDMap } from "@/processes/exploreReports/config/chartNameIDMap";
+
+function resolveUseBackend(rootGetters): boolean {
+  const webApiEnabled = environment.WEB_API_ENABLED;
+  const useAnnotationsApi = environment.USE_ANNOTATIONS_API;
+  return webApiEnabled
+    ? rootGetters.getSettings.user && useAnnotationsApi
+    : useAnnotationsApi;
+}
 
 const state = {
   notes: {},
@@ -50,71 +58,19 @@ const getters = {
 };
 
 const actions = {
-  async [LOAD_API_NOTES]({ commit, rootGetters }, payload) {
+  async [LOAD_API_NOTES]({ commit }, payload) {
     if (!payload || !payload.length) return;
     const data = await AnnotationsService.search.get(payload);
-    // const sources = [...rootGetters.getSources, { cdm_source_key: undefined }];
-    // await Promise.allSettled(
-    //   sources.map((source) =>
-    //     apiService(
-    //       {
-    //         url: getFilePath({
-    //           cdm: source.cdm_source_key,
-    //         })[NOTES],
-    //         method: "get",
-    //       },
-    //       { source }
-    //     )
-    //   )
-    // ).then((responses) => {
-    //   const loadedData = responses.reduce((object, response) => {
-    //     if (response.status === "fulfilled") {
-    //       return mergeObjects(object, response.value.data, "id");
-    //     }
-    //     return object;
-    //   }, {});
-    //   const notes = localStorageService.get("notes")
-    //     ? mergeAndCompareByDate(localStorageService.get("notes"), loadedData)
-    //     : loadedData;
-    //
     commit(SET_NOTES, { data: data.data });
-    //   // localStorageService.set("notes", notes);
-    // });
   },
 
-  async [LOAD_ALL_NOTES]({ commit, rootGetters }, payload) {
+  async [LOAD_ALL_NOTES]({ commit }, payload) {
     const data = await AnnotationsService.fetchAll.get(
       payload.first,
       payload.step,
-      payload.filter
+      payload.filter,
     );
-    // const sources = [...rootGetters.getSources, { cdm_source_key: undefined }];
-    // await Promise.allSettled(
-    //   sources.map((source) =>
-    //     apiService(
-    //       {
-    //         url: getFilePath({
-    //           cdm: source.cdm_source_key,
-    //         })[NOTES],
-    //         method: "get",
-    //       },
-    //       { source }
-    //     )
-    //   )
-    // ).then((responses) => {
-    //   const loadedData = responses.reduce((object, response) => {
-    //     if (response.status === "fulfilled") {
-    //       return mergeObjects(object, response.value.data, "id");
-    //     }
-    //     return object;
-    //   }, {});
-    //   const notes = localStorageService.get("notes")
-    //     ? mergeAndCompareByDate(localStorageService.get("notes"), loadedData)
-    //     : loadedData;
-    //
-    commit(SET_NOTES, { data: data.data });
-    //   // localStorageService.set("notes", notes);
-    // });
+    commit(SET_NOTES, { data: { annotations: data.data, ...data.meta } });
   },
   async [LOAD_NOTES]({ commit, rootGetters }) {
     const sources = [...rootGetters.getSources, { cdm_source_key: undefined }];
@@ -127,9 +83,9 @@ const actions = {
             })[NOTES],
             method: "get",
           },
-          { source }
-        )
-      )
+          { source },
+        ),
+      ),
     ).then((responses) => {
       const loadedData = responses.reduce((object, response) => {
         if (response.status === "fulfilled") {
@@ -192,14 +148,13 @@ const actions = {
         },
       })
       .then(function (content) {
-        // see FileSaver.js
-        saveAs(content, "notes.zip");
+        downloadBlob(content, "notes.zip");
       });
   },
 
   async [CREATE_SELECTION](
     { commit, getters, rootState, rootGetters },
-    params
+    params,
   ) {
     const chartId = params.chartId;
     const chartName = chartNameIDMap[chartId];
@@ -207,20 +162,13 @@ const actions = {
     const domainName = rootState.route.params.domain;
     const conceptId = params.conceptId || rootState.route.params.concept;
 
-    const webApiEnabled = environment.WEB_API_ENABLED;
-    const loggedIn = rootGetters.getSettings.user;
-    const useAnnotationsApi = environment.USE_ANNOTATIONS_API;
-
-    const useBackend = webApiEnabled
-      ? loggedIn && useAnnotationsApi
-      : useAnnotationsApi;
+    const useBackend = resolveUseBackend(rootGetters);
 
     let data = { ...getters.getNotes };
     const path = [chartId].filter(Boolean);
     data = createNestedProperty(data, path);
     if (useBackend) {
       const annotation = await AnnotationsService.create.post(
-        "123",
         chartId,
         chartName,
         reportName,
@@ -228,9 +176,9 @@ const actions = {
         conceptId,
         params.selection.coordinates,
         params.selection.metadata,
-        params.selection.body
+        params.selection.body,
       );
-      _.get(data, path.join(".")).push(annotation.data.annotation);
+      _.get(data, path.join(".")).push(annotation.data);
     } else {
       _.get(data, path.join(".")).push(params.selection);
     }
@@ -243,15 +191,9 @@ const actions = {
 
   async [EDIT_SELECTION](
     { commit, state, getters, rootState, rootGetters },
-    params
+    params,
   ) {
-    const webApiEnabled = environment.WEB_API_ENABLED;
-    const loggedIn = rootGetters.getSettings.user;
-    const useAnnotationsApi = environment.USE_ANNOTATIONS_API;
-
-    const useBackend = webApiEnabled
-      ? loggedIn && useAnnotationsApi
-      : useAnnotationsApi;
+    const useBackend = resolveUseBackend(rootGetters);
 
     const chartName = getters.getSelectedRectangle?.report || params.report;
     const selectionId =
@@ -264,7 +206,7 @@ const actions = {
         selectionId,
         coordinates,
         metadata,
-        body
+        body,
       );
     }
 
@@ -273,7 +215,7 @@ const actions = {
     const selections = [..._.get(data, path.join("."))];
     let newSelections = [];
     const selectionIndex = selections.findIndex(
-      (selection) => selection.id === selectionId
+      (selection) => selection.id === selectionId,
     );
     if (selectionIndex !== -1) {
       newSelections = selections.map((selection, index) => {
@@ -296,21 +238,15 @@ const actions = {
     const chartName = getters.getSelectedRectangle.report;
     const selectionId = getters.getSelectedRectangle.item.id;
 
-    const webApiEnabled = environment.WEB_API_ENABLED;
-    const loggedIn = rootGetters.getSettings.user;
-    const useAnnotationsApi = environment.USE_ANNOTATIONS_API;
-
-    const useBackend = webApiEnabled
-      ? loggedIn && useAnnotationsApi
-      : useAnnotationsApi;
+    const useBackend = resolveUseBackend(rootGetters);
 
     if (useBackend) {
-      const annotation = await AnnotationsService.delete.delete(selectionId);
+      await AnnotationsService.delete.delete(selectionId);
     }
     const data = { ...getters.getNotes };
     const path = [chartName].filter(Boolean);
     const selections = _.get(data, path.join(".")).filter(
-      (selection) => selection.id !== selectionId
+      (selection) => selection.id !== selectionId,
     );
 
     _.set(data, path.join("."), selections);

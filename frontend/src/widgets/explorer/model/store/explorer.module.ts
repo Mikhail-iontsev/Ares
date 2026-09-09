@@ -22,9 +22,7 @@ import errorMessages from "@/widgets/error/model/config/errorMessages";
 import environment from "@/shared/api/environment";
 
 const state = {
-  folders: config.folders,
   sources: null,
-  reports: config.reports,
   queryIndex: null,
   dataLoaded: false,
 };
@@ -40,13 +38,13 @@ const getters = {
     return state.dataLoaded;
   },
   getSelectedFolder: function (state, getters, rootState) {
-    return state.folders.find((folder) =>
-      rootState.route.matched.some((route) => route.name === folder.key)
+    return config.folders.find((folder) =>
+      rootState.route.matched.some((route) => route.name === folder.key),
     );
   },
   getFilteredReports: function (state, getters, rootState) {
     const webApiEnabled = environment.WEB_API_ENABLED;
-    return state.reports.filter((report) => {
+    return config.reports.filter((report) => {
       const folderMatch = report.folder === getters.getSelectedFolder.name;
       const webApiCondition = webApiEnabled || !report.webApiRequired;
       return folderMatch && webApiCondition;
@@ -54,7 +52,7 @@ const getters = {
   },
   getSelectedSource: function (state, getters, rootState): Source {
     return getters.getSources.find(
-      (source) => rootState.route.params.cdm === source.cdm_source_key
+      (source) => rootState.route.params.cdm === source.cdm_source_key,
     );
   },
   getReleases: function (state, getters): SourceRelease[] {
@@ -63,29 +61,32 @@ const getters = {
   getSelectedRelease: function (state, getters, rootState): SourceRelease {
     return getters.getReleases
       ? getters.getReleases.find(
-          (release) => rootState.route.params.release === release.release_id
+          (release) => rootState.route.params.release === release.release_id,
         )
       : null;
   },
   getSelectedReport: function (state, getters, rootState) {
     const route = rootState.route;
 
-    const isDomain = route.params.domain;
+    const isDomain =
+      route.params.domain === "undefined" ? undefined : route.params.domain;
     const currentReport = route.name;
     const isRelease = route.params.release;
     const isCohort = route.params.cohort_id;
+
     if (isDomain && isRelease && route.name !== "networkComparisonTool") {
       const domainTable = getters.getFilteredReports.find(
         (report) =>
           report.domain &&
           (report.childName === currentReport ||
-            report.routeName === currentReport)
+            report.routeName === currentReport),
       );
 
-      return domainTable.reports.find((report) => {
+      return domainTable?.reports?.find((report) => {
         return isDomain === report.domain;
       });
     }
+
     if (isCohort) {
       return getters.getFilteredReports.find((report) => {
         return report.routeName === "cohorts";
@@ -107,8 +108,8 @@ const actions = {
       })
       .catch((error) => {
         const errorMessage = errorMessages.reportsMissingFiles.index;
-        const url = error.config.url;
-        const errorCode = error.response.status;
+        const url = error.config?.url;
+        const errorCode = error.response?.status;
 
         dispatch(errorActions.NEW_ERROR, {
           userMessage: errorMessage,
@@ -117,12 +118,14 @@ const actions = {
         });
       });
   },
-  [FETCH_QUERY_INDEX]({ commit, dispatch }, params) {
+  [FETCH_QUERY_INDEX]({ commit }, params) {
     return apiService(getFilePath(params)[EXPORT_QUERY_INDEX], {
       required: false,
-    }).then((response) => {
-      commit(LOAD_QUERY_INDEX, response.data);
-    });
+    })
+      .then((response) => {
+        commit(LOAD_QUERY_INDEX, response.data);
+      })
+      .catch(() => {});
   },
 };
 

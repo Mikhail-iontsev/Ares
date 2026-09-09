@@ -1,31 +1,27 @@
 export default {
   root: {
     class: [
-      //positioning
-
       "flex",
       "flex-col",
       "justify-between",
-      //Shape
       "rounded-lg",
-      "shadow-md",
-
-      //Color
-      "bg-surface-0 dark:bg-surface-800",
+      "border-[1.5px] border-[var(--color-border)]",
+      "shadow-[0_2px_8px_rgba(0,0,0,0.07)]",
+      "bg-[var(--color-bg-surface)]",
       "text-surface-700 dark:text-surface-0/80",
     ],
   },
   header: {
     class: [
       "flex items-center justify-between",
-      "rounded-tl-lg rounded-tr-lg bg-gray-100 dark:text-white text-black dark:border-surface-700 dark:bg-surface-700 p-2",
+      "rounded-tl-lg rounded-tr-lg p-2",
     ],
   },
   body: {
     class: "py-5",
   },
   title: {
-    class: "text-lg uppercase font-medium md:px-4",
+    class: "text-lg uppercase font-normal tracking-wide md:px-4",
   },
   subtitle: {
     class: [
@@ -40,8 +36,6 @@ export default {
     class: "py-6 px-5 md:px-6",
   },
   footer: {
-    class: [
-      "rounded-bl-lg rounded-br-lg bg-gray-100 dark:text-white text-black dark:border-surface-700 dark:bg-surface-700 p-2 relative bottom-0",
-    ],
+    class: ["rounded-bl-lg rounded-br-lg p-2 relative bottom-0"],
   },
 };

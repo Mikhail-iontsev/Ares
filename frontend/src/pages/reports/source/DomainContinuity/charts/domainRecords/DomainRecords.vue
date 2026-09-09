@@ -9,37 +9,39 @@
       :chart-spec="getEChartsOverview"
       :height="totalHeight"
     />
-    <div v-if="showTable" class="p-4">
-      <DataTable
-        :striped-rows="store.getters.getSettings.strippedRows"
-        size="small"
-        :value="data"
-        paginator
-        currentPageReportTemplate="{first} to {last} of {totalRecords}"
-        paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
-        :rows="5"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-      >
-        <Column field="release_date" header="Date"> </Column>
-        <Column field="domain" header="Domain"> </Column>
-        <Column
-          :pt="{ headerContent: 'justify-end' }"
-          sortable
-          header="Records"
-          field="count_records"
+    <CollapseTransition>
+      <div v-if="showTable" class="p-4">
+        <DataTable
+          :striped-rows="store.getters.getSettings.strippedRows"
+          size="small"
+          :value="data"
+          paginator
+          currentPageReportTemplate="{first} to {last} of {totalRecords}"
+          paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+          :rows="5"
+          :rowsPerPageOptions="[5, 10, 20, 50]"
         >
-          <template #body="slotProps">
-            <div class="flex justify-end">
-              {{
-                slotProps.data.count_records
-                  ? helpers.formatComma(slotProps.data.count_records)
-                  : "No data"
-              }}
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-    </div>
+          <Column field="release_date" header="Date"> </Column>
+          <Column field="domain" header="Domain"> </Column>
+          <Column
+            :pt="{ headerContent: 'justify-end' }"
+            sortable
+            header="Records"
+            field="count_records"
+          >
+            <template #body="slotProps">
+              <div class="flex justify-end">
+                {{
+                  slotProps.data.count_records
+                    ? formatComma(slotProps.data.count_records)
+                    : "No data"
+                }}
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+    </CollapseTransition>
 
     <template #footer>
       <div class="flex flex-row gap-2">
@@ -52,10 +54,10 @@
           :icon="mdiCodeBraces"
           tooltip="View Export Query"
           @iconClicked="
-            helpers.openNewTab(
+            openNewTab(
               links.getSqlQueryLink(
-                store.getters.getQueryIndex.DOMAIN_SUMMARY.RECORDS_BY_DOMAIN[0]
-              )
+                store.getters.getQueryIndex.DOMAIN_SUMMARY.RECORDS_BY_DOMAIN[0],
+              ),
             )
           "
         />
@@ -65,23 +67,20 @@
 </template>
 
 <script setup lang="ts">
-import { Chart } from "@/widgets/chart";
-import { specOverview } from "./specOverview";
 import { links } from "@/shared/config/links";
 import { useStore } from "vuex";
 import { RouteLocation, useRouter } from "vue-router";
-import { helpers } from "@/shared/lib/mixins";
-import ChartActionIcon from "@/entities/toggleIcon/ToggleIcon.vue";
+import ChartActionIcon from "@/shared/ui/toggleIcon";
 import Panel from "primevue/panel";
 import { mdiCodeBraces, mdiHelpCircle } from "@mdi/js";
-import ChartHeader from "@/widgets/chart/ui/ChartHeader.vue";
+import ChartHeader from "@/widgets/echarts/chartHeader";
 import { computed, ref } from "vue";
-import { QUALITY_INDEX } from "@/shared/config/files";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
-import getEChartsDataQualityDelta from "@/pages/reports/source/DataQualityHistory/charts/DataQualityDelta/dataQualityDelta";
-import Echarts from "@/widgets/echarts/Echarts.vue";
+import Echarts from "@/widgets/echarts/echarts";
 import { getEChartsOverview } from "@/pages/reports/source/DomainContinuity/charts/domainRecords/domainContinuity";
+import { formatComma, getPaddedDate } from "@/shared/lib/formatters";
+import { getValuesArray, openNewTab } from "@/shared/lib/utils";
 
 const store = useStore();
 const router = useRouter();
@@ -96,10 +95,7 @@ const navigate = function (route) {
 const eventListener = function (result, route: RouteLocation) {
   return result.view.addEventListener("click", (event, item) => {
     const itemData = item.datum.datum;
-    const releaseKey = helpers.getPaddedDate(
-      new Date(itemData.release_date),
-      ""
-    );
+    const releaseKey = getPaddedDate(new Date(itemData.release_date), "");
     const routeUrl = {
       name: "domainTable",
       params: {
@@ -122,7 +118,7 @@ const data = computed(() => {
   return store.getters.getData.domainRecords;
 });
 
-const domains = helpers.getValuesArray(data.value, "domain", true);
+const domains = getValuesArray(data.value, "domain", true);
 
 const facetCount = domains.length;
 const perFacetHeight = 105;

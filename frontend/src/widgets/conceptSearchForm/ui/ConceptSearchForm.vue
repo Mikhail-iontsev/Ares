@@ -39,32 +39,11 @@
               placeholder="Vocabularies"
             >
             </MultiSelect>
-            <MultiSelect
-              :pt="{
-                root: 'dark:bg-primary-400 bg-primary-500 text-white rounded',
-                labelContainer:
-                  'dark:bg-primary-400 bg-primary-500 text-white rounded',
-                trigger: [
-                  'flex items-center justify-center shrink-0 rounded-tr-md rounded-br-md dark:bg-primary-400 w-12',
-                ],
-              }"
+            <ColumnSelector
+              compact
               v-model="selectedHeaders"
-              data-key="title"
-              option-label="title"
-              option-value="key"
               :options="getHeaders"
-              placeholder="Select Columns"
-            >
-              <template #value>
-                <span class="flex flex-row w-full text-white items-center">
-                  <svg-icon type="mdi" :path="mdiTable"></svg-icon>
-                  <span class="uppercase text-base">Columns to display</span>
-                </span>
-              </template>
-              <template #dropdownicon>
-                <span></span>
-              </template>
-            </MultiSelect>
+            />
 
             <Button color="primary" class="search-btn" @click="searchApi"
               ><span class="uppercase font-light text-white px-2"
@@ -236,7 +215,7 @@
               >
                 <template #body="slotProps">
                   <div class="flex justify-end">
-                    {{ helpers.formatComma(slotProps.data.record_count) }}
+                    {{ formatComma(slotProps.data.record_count) }}
                   </div>
                 </template>
               </Column>
@@ -249,7 +228,7 @@
               >
                 <template #body="slotProps">
                   <div class="flex justify-end">
-                    {{ helpers.formatComma(slotProps.data.desc_record_count) }}
+                    {{ formatComma(slotProps.data.desc_record_count) }}
                   </div>
                 </template>
               </Column>
@@ -262,7 +241,7 @@
               >
                 <template #body="slotProps">
                   <div class="flex justify-end">
-                    {{ helpers.formatComma(slotProps.data.person_count) }}
+                    {{ formatComma(slotProps.data.person_count) }}
                   </div>
                 </template>
               </Column>
@@ -275,7 +254,7 @@
               >
                 <template #body="slotProps">
                   <div class="flex justify-end">
-                    {{ helpers.formatComma(slotProps.data.desc_person_count) }}
+                    {{ formatComma(slotProps.data.desc_person_count) }}
                   </div>
                 </template>
               </Column>
@@ -424,7 +403,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { toRaw } from "vue";
 import MultiSelect from "primevue/multiselect";
-import SvgIcon from "@jamescoyle/vue-icon";
+import ColumnSelector from "@/shared/ui/columnSelector";
 
 import { ref, onBeforeMount, watch, Ref, nextTick } from "vue";
 import { computed } from "vue";
@@ -438,14 +417,15 @@ import {
 import getDuckDBTables from "@/shared/api/duckdb/conceptTables";
 import webApiKeyMap from "@/shared/config/webApiKeyMap";
 import { CONCEPT } from "@/shared/config/files";
-import { mdiAlertCircleOutline, mdiTable } from "@mdi/js";
+import { mdiAlertCircleOutline } from "@mdi/js";
 import errorMessages from "@/widgets/error/model/config/errorMessages";
 import {
   FETCH_CONCEPTS_RECORD_COUNT,
   FETCH_VOCABULARIES,
 } from "@/shared/api/webAPI/data/store/actions.type";
 import { FilterMatchMode } from "primevue/api";
-import { helpers } from "@/shared/lib/mixins";
+import { formatComma } from "@/shared/lib/formatters";
+import { getValuesArray } from "@/shared/lib/utils";
 
 interface Props {
   addedConcepts: object;
@@ -466,11 +446,11 @@ const newFilters = ref({
 });
 
 const concept_class_options = computed(() => {
-  return helpers.getValuesArray(searchData.value, "CONCEPT_CLASS_ID", true);
+  return getValuesArray(searchData.value, "CONCEPT_CLASS_ID", true);
 });
 
 const standard_concept_options = computed(() => {
-  return helpers.getValuesArray(
+  return getValuesArray(
     searchData.value,
     "STANDARD_CONCEPT_CAPTION",
     true
@@ -478,11 +458,11 @@ const standard_concept_options = computed(() => {
 });
 
 const vocabulary_options = computed(() => {
-  return helpers.getValuesArray(searchData.value, "VOCABULARY_ID", true);
+  return getValuesArray(searchData.value, "VOCABULARY_ID", true);
 });
 
 const invalid_reason_options = computed(() => {
-  return helpers.getValuesArray(
+  return getValuesArray(
     searchData.value,
     "INVALID_REASON_CAPTION",
     true
@@ -490,63 +470,63 @@ const invalid_reason_options = computed(() => {
 });
 
 const domain_options = computed(() => {
-  return helpers.getValuesArray(searchData.value, "DOMAIN_ID", true);
+  return getValuesArray(searchData.value, "DOMAIN_ID", true);
 });
 
 const headers = ref({
   CONCEPT_ID: {
-    title: "Concept Id",
+    label: "Concept Id",
     key: "CONCEPT_ID",
     show: true,
   },
   CONCEPT_NAME: {
-    title: "Concept Name",
+    label: "Concept Name",
     key: "CONCEPT_NAME",
     show: true,
   },
   CONCEPT_CLASS_ID: {
-    title: "Class",
+    label: "Class",
     key: "CONCEPT_CLASS_ID",
     show: false,
   },
   STANDARD_CONCEPT_CAPTION: {
-    title: "Standard Concept",
+    label: "Standard Concept",
     key: "STANDARD_CONCEPT_CAPTION",
     show: true,
   },
   VOCABULARY_ID: {
-    title: "Vocabulary",
+    label: "Vocabulary",
     key: "VOCABULARY_ID",
     show: false,
   },
   INVALID_REASON_CAPTION: {
-    title: "Invalid Reason",
+    label: "Invalid Reason",
     key: "INVALID_REASON_CAPTION",
     show: false,
   },
   DOMAIN_ID: {
-    title: "Domain",
+    label: "Domain",
     key: "DOMAIN_ID",
     show: false,
   },
 
   record_count: {
-    title: "Record count",
+    label: "Record count",
     key: "record_count",
     show: true,
   },
   desc_record_count: {
-    title: "Descendant record count",
+    label: "Descendant record count",
     key: "desc_record_count",
     show: true,
   },
   person_count: {
-    title: "Person count",
+    label: "Person count",
     key: "person_count",
     show: true,
   },
   desc_person_count: {
-    title: "Descendant person count",
+    label: "Descendant person count",
     key: "desc_person_count",
     show: true,
   },
@@ -690,7 +670,7 @@ const searchApi = async function () {
         let recordCount;
         store
           .dispatch(FETCH_CONCEPTS_RECORD_COUNT, {
-            conceptsList: helpers.getValuesArray(data, "CONCEPT_ID", true),
+            conceptsList: getValuesArray(data, "CONCEPT_ID", true),
           })
           .then((response) => {
             recordCount = response.data;

@@ -18,40 +18,42 @@
       :annotation-mode="annotationsMode"
       :chart-spec="getEChartsOptionProportionByMonth"
     />
-    <div v-if="showTable" class="p-4">
-      <DataTable
-        :striped-rows="store.getters.getSettings.strippedRows"
-        removable-sort
-        size="small"
-        paginator
-        currentPageReportTemplate="{first} to {last} of {totalRecords}"
-        paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
-        :value="data"
-        :rows="5"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-      >
-        <Column sortable header="Date" field="date">
-          <template #body="slotProps">
-            <div>
-              {{
-                slotProps.data.X_CALENDAR_MONTH
-                  ? slotProps.data.X_CALENDAR_MONTH
-                  : "no data"
-              }}
-            </div>
-          </template>
-        </Column>
-
-        <Column
-          style="text-align: end"
-          :pt="{ headerContent: 'justify-end' }"
-          sortable
-          header="RPP1000"
-          field="Y_PREVALENCE_1000PP"
+    <CollapseTransition>
+      <div v-if="showTable" class="p-4">
+        <DataTable
+          :striped-rows="store.getters.getSettings.strippedRows"
+          removable-sort
+          size="small"
+          paginator
+          currentPageReportTemplate="{first} to {last} of {totalRecords}"
+          paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown CurrentPageReport"
+          :value="data"
+          :rows="5"
+          :rowsPerPageOptions="[5, 10, 20, 50]"
         >
-        </Column>
-      </DataTable>
-    </div>
+          <Column sortable header="Date" field="date">
+            <template #body="slotProps">
+              <div>
+                {{
+                  slotProps.data.X_CALENDAR_MONTH
+                    ? slotProps.data.X_CALENDAR_MONTH
+                    : "no data"
+                }}
+              </div>
+            </template>
+          </Column>
+
+          <Column
+            style="text-align: end"
+            :pt="{ headerContent: 'justify-end' }"
+            sortable
+            header="RPP1000"
+            field="Y_PREVALENCE_1000PP"
+          >
+          </Column>
+        </DataTable>
+      </div>
+    </CollapseTransition>
 
     <NotesPanel v-if="notesMode" :notes="notes" />
     <template #footer>
@@ -69,7 +71,7 @@
           v-if="store.getters.getData.isNotStationary"
           :icon="mdiClockAlert"
           :tooltip="store.getters.getData.seasonalityComment"
-          @iconClicked="helpers.openNewTab(links.getCastorLink())"
+          @iconClicked="openNewTab(links.getCastorLink())"
         />
         <ChartActionIcon
           :icon="mdiDatabaseClock"
@@ -81,11 +83,11 @@
           :icon="mdiCodeBraces"
           tooltip="View Export Query"
           @iconClicked="
-            helpers.openNewTab(
+            openNewTab(
               links.getSqlQueryLink(
                 store.getters.getQueryIndex[route.params.domain.toUpperCase()]
-                  .PREVALENCE_BY_MONTH[0]
-              )
+                  .PREVALENCE_BY_MONTH[0],
+              ),
             )
           "
         />
@@ -100,9 +102,8 @@ import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
 import NotesPanel from "@/widgets/notesPanel/ui/NotesPanel.vue";
-import ChartHeader from "@/widgets/chart/ui/ChartHeader.vue";
-import { helpers } from "@/shared/lib/mixins";
-import ChartActionIcon from "@/entities/toggleIcon/ToggleIcon.vue";
+import ChartHeader from "@/widgets/echarts/chartHeader";
+import ChartActionIcon from "@/shared/ui/toggleIcon";
 import Panel from "primevue/panel";
 import {
   mdiClockAlert,
@@ -115,7 +116,8 @@ import DataTable from "primevue/datatable";
 import useAnnotations from "@/shared/lib/composables/useAnnotations";
 import useAnnotationControls from "@/shared/lib/composables/useAnnotationControls";
 import getEChartsOptionProportionByMonth from "./recordCountProportionByMonth";
-import Echarts from "@/widgets/echarts/Echarts.vue";
+import Echarts from "@/widgets/echarts/echarts";
+import { openNewTab } from "@/shared/lib/utils";
 const store = useStore();
 const route = useRoute();
 const router = useRouter();

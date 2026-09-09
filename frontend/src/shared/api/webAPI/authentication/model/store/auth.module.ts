@@ -3,7 +3,7 @@ import { WEB_API_LOG_IN, GET_USER, LOG_OUT } from "./actions.type";
 import { authService } from "@/shared/api/webAPI/services/authService";
 import { ADD_ALERT } from "@/widgets/snackbar/model/store/actions.type";
 import environment from "@/shared/api/environment";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "@/shared/lib/utils";
 import LocalStorageService from "@/shared/api/localStorageService";
 import cookiesService from "@/shared/api/cookiesService";
 import localStorageService from "@/shared/api/localStorageService";
@@ -54,7 +54,7 @@ const actions = {
         if (!token) throw new Error("Token not found");
         commit(SAVE_TOKEN, token);
       }
-      dispatch(GET_USER);
+      return dispatch(GET_USER);
     } catch (error) {
       dispatch(ADD_ALERT, {
         message: "Could not authenticate",
@@ -62,7 +62,7 @@ const actions = {
       });
     }
   },
-  async [GET_USER]({ commit, dispatch, rootGetters }) {
+  async [GET_USER]({ state, commit, dispatch, rootGetters }) {
     if (!environment.WEB_API_ENABLED) return;
     const isExpired = checkExpiryDate(LocalStorageService.get(tokenKey));
 
@@ -91,6 +91,9 @@ const actions = {
         clearInterval(checkAuthStatus);
       }
     }, 1000);
+    if (state.user) {
+      return user;
+    }
   },
   async [LOG_OUT]({ commit, dispatch, rootGetters }, payload) {
     dispatch(EDIT_USER, null);

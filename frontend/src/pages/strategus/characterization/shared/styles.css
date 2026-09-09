@@ -1,0 +1,147 @@
+.section {
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.field-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  margin-bottom: 0.25rem;
+  color: var(--color-text-label);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--color-text-subtle);
+  padding: 2.5rem 1rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.result-table {
+  font-size: 0.8125rem;
+}
+
+.selector-table {
+  margin-bottom: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.control-action {
+  padding-bottom: 1px;
+}
+
+.table-search {
+  flex: 1 1 200px;
+  min-width: 160px;
+  max-width: 400px;
+}
+
+.table-note {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  margin: 0 0 0.5rem 0;
+}
+
+@keyframes bh-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.results-ctx {
+  animation: bh-reveal 0.35s ease both;
+}
+
+.results-body {
+  animation: bh-reveal 0.4s ease both;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.section-header h3 {
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.fullscreen-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-subtle);
+  padding: 4px;
+  border-radius: 4px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.fullscreen-btn:hover {
+  color: var(--color-interactive-hover);
+  background: var(--color-overlay-subtle);
+}
+
+.fullscreen-btn:focus-visible {
+  outline: none;
+}
+
+.tab-fade-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.tab-fade-enter-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tab-fade-enter-from,
+.tab-fade-leave-to {
+  opacity: 0;
+}
+
+.tab-fade-enter-from {
+  transform: translateY(4px);
+}
+
+.col-header-with-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 12rem;
+}
+
+.col-header-with-filter > span {
+  white-space: nowrap;
+}
+
+.filter-dropdown {
+  width: 100%;
+  font-size: 0.75rem;
+}
+
+.filter-dropdown .p-dropdown-label {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}

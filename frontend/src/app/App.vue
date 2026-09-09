@@ -1,15 +1,19 @@
 <template>
-  <Explorer class="min-w-[1250px] px-28" v-if="showExplorer" />
+  <Transition name="explorer-fade">
+    <Explorer v-if="explorerVisible" class="min-w-[1250px] px-28" />
+  </Transition>
+  <BottomNav />
+  <SqlDebugWidget v-if="devWidget" />
 
-  <div
-    :class="{
-      'px-3': true,
-      'pt-20': isSticky,
-      'min-w-[1250px]': true,
-    }"
-  >
+  <div class="px-3 min-w-[1250px]">
     <div class="flex flex-col justify-center px-14 md:px-20 lg:px-24 mx-1">
-      <router-view name="main" />
+      <router-view name="main" v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <div :key="route.name">
+            <component :is="Component" />
+          </div>
+        </Transition>
+      </router-view>
     </div>
   </div>
 </template>
@@ -20,7 +24,7 @@ import { webApiActions } from "@/shared/api/webAPI";
 
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
-import { computed, watch, onBeforeMount, onMounted } from "vue";
+import { computed, watch, onBeforeMount, ref } from "vue";
 import {
   GET_USER,
   LOG_OUT,
@@ -28,7 +32,10 @@ import {
 import LocalStorageService from "@/shared/api/localStorageService";
 const store = useStore();
 const route = useRoute();
+
 import { Explorer } from "@/widgets/explorer";
+import BottomNav from "@/widgets/bottomNav";
+import SqlDebugWidget from "@/widgets/debugWidget";
 
 const favicon = document.getElementById("faviconTag");
 
@@ -36,20 +43,32 @@ const darkMode = computed(function (): boolean {
   return store.getters.getSettings.darkMode;
 });
 
-const isSticky = computed(() => {
-  return store.getters.getSettings.stickyNavBar;
-});
+const devWidget = computed(() => store.getters.getSettings.devWidget);
 
 const path = computed(function () {
   return route.path;
 });
 
-const showExplorer = computed(function () {
-  return (
+const needsExplorer = computed(
+  () =>
     path.value.includes("network") ||
     path.value.includes("cdm") ||
-    path.value.includes("datasource")
-  );
+    path.value.includes("datasource") ||
+    path.value.includes("characterization")
+);
+
+const explorerVisible = ref(needsExplorer.value);
+let explorerTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(needsExplorer, (val) => {
+  if (explorerTimer) clearTimeout(explorerTimer);
+  if (val) {
+    explorerTimer = setTimeout(() => {
+      explorerVisible.value = true;
+    }, 200);
+  } else {
+    explorerVisible.value = false;
+  }
 });
 
 function setColorMode() {
@@ -83,6 +102,34 @@ LocalStorageService.watch("bearerToken", (newToken) => {
 </script>
 
 <style lang="scss">
+.page-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.page-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.explorer-fade-enter-active,
+.explorer-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.explorer-fade-enter-from,
+.explorer-fade-leave-to {
+  opacity: 0;
+}
+
 .vg-tooltip {
   z-index: 999999 !important;
 }
@@ -90,25 +137,90 @@ html {
   font-size: 14px;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+html {
+  --doc-scrollbar-color: var(--color-scrollbar);
+  --doc-scrollbar-hover: var(--color-scrollbar-hover);
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  border-radius: 25px;
+  background: transparent;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
-::-webkit-scrollbar-thumb {
-  border-radius: 25px;
-}
-html:not(.dark) ::-webkit-scrollbar-thumb {
-  @apply bg-surface-400;
-  border-radius: 25px;
+::-webkit-scrollbar-thumb:vertical {
+  border-radius: 0;
+  background: linear-gradient(
+        to bottom right,
+        transparent 49%,
+        var(--doc-scrollbar-color) 51%
+      )
+      0 0 / 100% 6px no-repeat,
+    linear-gradient(var(--doc-scrollbar-color), var(--doc-scrollbar-color)) 0
+      6px / 100% calc(100% - 12px) no-repeat,
+    linear-gradient(
+        to top left,
+        transparent 49%,
+        var(--doc-scrollbar-color) 51%
+      )
+      0 100% / 100% 6px no-repeat;
 }
 
-html.dark ::-webkit-scrollbar-thumb {
-  @apply bg-surface-200;
+::-webkit-scrollbar-thumb:vertical:hover {
+  background: linear-gradient(
+        to bottom right,
+        transparent 49%,
+        var(--doc-scrollbar-hover) 51%
+      )
+      0 0 / 100% 6px no-repeat,
+    linear-gradient(var(--doc-scrollbar-hover), var(--doc-scrollbar-hover)) 0
+      6px / 100% calc(100% - 12px) no-repeat,
+    linear-gradient(
+        to top left,
+        transparent 49%,
+        var(--doc-scrollbar-hover) 51%
+      )
+      0 100% / 100% 6px no-repeat;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 0;
+  background: linear-gradient(
+        to bottom right,
+        transparent 49%,
+        var(--doc-scrollbar-color) 51%
+      )
+      0 0 / 6px 100% no-repeat,
+    linear-gradient(var(--doc-scrollbar-color), var(--doc-scrollbar-color)) 6px
+      0 / calc(100% - 12px) 100% no-repeat,
+    linear-gradient(
+        to bottom left,
+        transparent 49%,
+        var(--doc-scrollbar-color) 51%
+      )
+      100% 0 / 6px 100% no-repeat;
+}
+
+::-webkit-scrollbar-thumb:horizontal:hover {
+  background: linear-gradient(
+        to bottom right,
+        transparent 49%,
+        var(--doc-scrollbar-hover) 51%
+      )
+      0 0 / 6px 100% no-repeat,
+    linear-gradient(var(--doc-scrollbar-hover), var(--doc-scrollbar-hover)) 6px
+      0 / calc(100% - 12px) 100% no-repeat,
+    linear-gradient(
+        to bottom left,
+        transparent 49%,
+        var(--doc-scrollbar-hover) 51%
+      )
+      100% 0 / 6px 100% no-repeat;
 }
 
 a {
@@ -131,27 +243,27 @@ a:visited {
 }
 
 .annotation-subject path {
-  fill: #e8336d;
+  fill: var(--color-annotation-self);
 }
 
 .other-user .annotation-subject path {
-  fill: #0d65eb;
+  fill: var(--color-annotation-other);
 }
 
 .annotation path {
-  stroke: #e8336d;
+  stroke: var(--color-annotation-self);
 }
 
 .other-user path {
-  stroke: #0d65eb;
+  stroke: var(--color-annotation-other);
 }
 
 .annotation text {
-  fill: #e8336d;
+  fill: var(--color-annotation-self);
 }
 
 other-user path {
-  stroke: #0d65eb;
+  stroke: var(--color-annotation-other);
 }
 
 .annotation-subject .handle:nth-child(2) {
@@ -162,35 +274,35 @@ other-user path {
 }
 
 .annotation.above path {
-  stroke: #e8336d;
+  stroke: var(--color-annotation-self);
 }
 
 .other-user.above path {
-  stroke: #0d65eb;
+  stroke: var(--color-annotation-other);
 }
 
 .annotation.above text {
-  fill: #e8336d;
+  fill: var(--color-annotation-self);
 }
 
 .other-user.above text {
-  fill: #0d65eb;
+  fill: var(--color-annotation-other);
 }
 
 .annotation.anomaly path {
-  stroke: #e8336d;
+  stroke: var(--color-annotation-self);
   stroke-width: 2px;
 }
 
 .other-user.anomaly path {
-  stroke: #0d65eb;
+  stroke: var(--color-annotation-other);
 }
 .annotation.anomaly text {
-  fill: #e8336d;
+  fill: var(--color-annotation-self);
 }
 
 .other-user.anomaly text {
-  fill: #0d65eb;
+  fill: var(--color-annotation-other);
 }
 
 .tooltip-field-title {

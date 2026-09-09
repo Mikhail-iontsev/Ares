@@ -27,10 +27,17 @@
           :class="drillDownViewOption?.class"
         >
           <div class="px-14 md:px-20 lg:px-24 mx-1 h-[90%]">
-            <ConceptReport v-if="conceptData" :data="conceptData" />
-            <div class="flex justify-center items-center h-full" v-else>
-              <AnimatedLogo />
-            </div>
+            <Transition name="concept-fade" mode="out-in">
+              <ConceptReport v-if="conceptData" :data="conceptData" />
+              <div class="flex justify-center items-center h-full" v-else>
+                <!--              <AnimatedLogo />-->
+                <BlackHoleLoader
+                  text="Fetching..."
+                  size="lg"
+                  :state="drilldownLoaderState"
+                />
+              </div>
+            </Transition>
           </div>
         </Sidebar>
       </div>
@@ -41,13 +48,13 @@
 <script setup lang="ts">
 import { useStore } from "vuex";
 
-import MainTable from "@/pages/reports/release/DomainTable/components/MainTable.vue";
-import DataStratificationByVisit from "@/pages/reports/release/DomainTable/components/DataStratificationByVisit/DataStratificationByVisit.vue";
-import DataStratificationByDrug from "@/pages/reports/release/DomainTable/components/DataStratificationByDrug/DataStratificationByDrug.vue";
-import DomainMetadataTable from "@/pages/reports/release/DomainTable/components/DomainMetadataTable.vue";
-import PageHeader from "@/entities/pageHeader/PageHeader.vue";
+import MainTable from "@/pages/reports/release/DomainTable/components/mainTable";
+import DataStratificationByVisit from "@/pages/reports/release/DomainTable/components/DataStratificationByVisit";
+import DataStratificationByDrug from "@/pages/reports/release/DomainTable/components/DataStratificationByDrug";
+import DomainMetadataTable from "@/pages/reports/release/DomainTable/components/domainMetadataTable";
+import PageHeader from "@/shared/ui/pageHeader";
 import Sidebar from "primevue/sidebar";
-import ConceptReport from "@/pages/reports/release/DomainTable/components/ConceptReport/ConceptReport.vue";
+import ConceptReport from "@/pages/reports/release/DomainTable/components/ConceptReport";
 import { ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import environment from "@/shared/api/environment";
@@ -55,6 +62,7 @@ import getDuckDBTables from "@/shared/api/duckdb/conceptTables";
 import { CONCEPT, DOMAIN_SUMMARY } from "@/shared/config/files";
 import { FETCH_FILES } from "@/processes/exploreReports/model/store/actions.type";
 import AnimatedLogo from "@/shared/assets/AnimatedLogo.vue";
+import BlackHoleLoader from "@/shared/ui/blackHoleLoader";
 
 const store = useStore();
 const route = useRoute();
@@ -67,6 +75,7 @@ const defaultSources = computed(() => {
 const openedDomain = computed(() => route.params.domain);
 
 const conceptData = ref(null);
+const drilldownLoaderState = ref("idle");
 
 const drillDownViewOption = computed(
   () => store.getters.getSettings.drillDownViewOptions
@@ -75,6 +84,9 @@ const drillDownViewOption = computed(
 async function loadDrilldown(concept) {
   const conceptId = concept.CONCEPT_ID;
   visible.value = true;
+  conceptData.value = null;
+  drilldownLoaderState.value = "loading";
+  const loadStart = Date.now();
   router.replace({ name: "domainTable", params: { concept: conceptId } });
   const domain = openedDomain.value;
   const duckdbTables = getDuckDBTables({
@@ -89,16 +101,26 @@ async function loadDrilldown(concept) {
   ];
 
   const files = environment.DUCKDB_ENABLED ? duckdbTables : jsonConcepts;
-  await store.dispatch(FETCH_FILES, {
-    files: files,
-    duckdb_supported: true,
-    params: {
-      domain,
-      concept: conceptId,
-    },
-    defaultSources: defaultSources.value,
-  });
-  conceptData.value = store.getters.getData;
+  try {
+    await store.dispatch(FETCH_FILES, {
+      files: files,
+      duckdb_supported: true,
+      params: {
+        domain,
+        concept: conceptId,
+      },
+      defaultSources: defaultSources.value,
+    });
+    if (Date.now() - loadStart >= 600) {
+      drilldownLoaderState.value = "success";
+      await new Promise((r) => setTimeout(r, 1100));
+    }
+    drilldownLoaderState.value = "idle";
+    await new Promise((r) => setTimeout(r, 220));
+    conceptData.value = store.getters.getData;
+  } catch {
+    drilldownLoaderState.value = "error";
+  }
 }
 
 const closeDrillDown = function () {
@@ -124,6 +146,20 @@ async function openDrilldownView(concept) {
 </script>
 
 <style scoped>
+.concept-fade-leave-active {
+  transition: opacity 0.12s ease;
+}
+.concept-fade-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+.concept-fade-enter-from,
+.concept-fade-leave-to {
+  opacity: 0;
+}
+.concept-fade-enter-from {
+  transform: scale(0.97);
+}
+
 td {
   max-width: 400px;
   white-space: nowrap;

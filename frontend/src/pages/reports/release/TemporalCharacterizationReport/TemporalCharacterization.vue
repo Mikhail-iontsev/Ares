@@ -70,7 +70,7 @@
           :icon="mdiCodeBraces"
           tooltip="View Export Query"
           @iconClicked="
-            helpers.openNewTab(
+            openNewTab(
               links.getSqlQueryLink(
                 store.getters.getQueryIndex.TEMPORAL_CHARACTERIZATION[0]
               )
@@ -83,11 +83,10 @@
 </template>
 
 <script setup lang="ts">
-import { helpers } from "@/shared/lib/mixins";
 import { links } from "@/shared/config/links";
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
-import ChartActionIcon from "@/entities/toggleIcon/ToggleIcon.vue";
+import ChartActionIcon from "@/shared/ui/toggleIcon";
 import InputGroup from "primevue/inputgroup";
 import InputText from "primevue/inputtext";
 import InputGroupAddon from "primevue/inputgroupaddon";
@@ -96,6 +95,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import { FilterMatchMode } from "primevue/api";
 import { mdiCodeBraces } from "@mdi/js";
+import { openNewTab } from "@/shared/lib/utils";
 
 const store = useStore();
 const newFilters = ref({
@@ -123,7 +123,7 @@ function getReportRoute(item: {
   CONCEPT_ID: string | number;
 }) {
   return {
-    name: "concept",
+    name: "domainTable",
     params: {
       domain: item.CDM_TABLE_NAME.toLowerCase(),
       concept: item.CONCEPT_ID,

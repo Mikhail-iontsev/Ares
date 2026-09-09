@@ -2,45 +2,47 @@
   <Sidebar class="w-2/6" v-model:visible="showMenu" position="right">
     <template #header>
       <div>
-        <h2 class="font-bold">Settings</h2>
+        <h2 class="text-xs font-semibold uppercase tracking-widest opacity-50">
+          Settings
+        </h2>
       </div>
     </template>
-    <div class="flex flex-col">
-      <div>
+    <div class="settings-content">
+      <div class="section-card">
+        <span class="section-label">Account</span>
         <UserAccount />
-        <Divider />
       </div>
-      <div class="flex flex-col">
-        <div class="flex flex-col gap-5">
-          <h3 class="text-left font-normal text-md">Data settings</h3>
-          <FavoriteSources class="w-full" />
-        </div>
-        <Divider></Divider>
-        <div class="flex flex-col gap-5">
-          <h3 class="text-left font-normal text-md">Charts</h3>
-          <ToggleBaseLine />
-          <ToggleMinMax />
-        </div>
-        <Divider></Divider>
 
-        <div class="flex flex-col gap-5">
-          <h3 class="text-left font-normal text-md">Appearance</h3>
-          <ToggleDarkMode />
-          <StickyNavBar />
-          <TableStrippedRowsToggle />
-          <DrillDownViewOptions />
-        </div>
-        <Divider></Divider>
+      <div class="section-card">
+        <span class="section-label">Data settings</span>
+        <FavoriteSources class="w-full" />
+      </div>
 
-        <div class="flex flex-col gap-5">
-          <h3 class="text-left font-normal text-md">Annotations</h3>
-          <ToggleDefaultAnnotatonsMode />
-          <ToggleDefaultNotesMode />
-        </div>
-        <Divider></Divider>
-        <div class="relative bottom-0 mt-4">
-          <ExportNotes></ExportNotes>
-        </div>
+      <div class="section-card">
+        <span class="section-label">Charts</span>
+        <ToggleBaseLine />
+        <ToggleMinMax />
+        <ColorSchemeSelector />
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">Appearance</span>
+        <ToggleDarkMode />
+        <StickyNavBar />
+        <TableStrippedRowsToggle />
+        <PersistColumnSelection />
+        <DrillDownViewOptions />
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">Annotations</span>
+        <ToggleDefaultAnnotatonsMode />
+        <ToggleDefaultNotesMode />
+      </div>
+
+      <div class="section-card">
+        <span class="section-label">Developer</span>
+        <ToggleDevWidget />
       </div>
     </div>
   </Sidebar>
@@ -56,20 +58,21 @@ export default {
 import ToggleDarkMode from "./components/toggleDarkMode";
 import ToggleBaseLine from "./components/toggleBaseLine";
 import ToggleMinMax from "./components/toggleMinMax";
-import Divider from "primevue/divider";
-import ToggleDefaultAnnotatonsMode from "./components/toggleDefaultAnnotationsMode/ToggleDefaultAnnotatonsMode.vue";
+import ToggleDefaultAnnotatonsMode from "./components/toggleDefaultAnnotationsMode";
 import StickyNavBar from "@/widgets/settings/ui/components/stickyNavBar";
 import TableStrippedRowsToggle from "@/widgets/settings/ui/components/strippedRows";
+import PersistColumnSelection from "@/widgets/settings/ui/components/persistColumnSelection";
 
 import { computed } from "vue";
 import { useStore } from "vuex";
-import ExportNotes from "@/widgets/settings/ui/components/exportNotes/ExportNotes.vue";
 import { TOGGLE_UI_VISIBILITY } from "@/widgets/settings/model/store/actions.type";
-import ToggleDefaultNotesMode from "@/widgets/settings/ui/components/toggleDefaultNotesMode/ToggleDefaultNotesMode.vue";
-import UserAccount from "@/widgets/settings/ui/components/userAccount/UserAccount.vue";
+import ToggleDefaultNotesMode from "@/widgets/settings/ui/components/toggleDefaultNotesMode";
+import UserAccount from "@/widgets/settings/ui/components/userAccount";
 import Sidebar from "primevue/sidebar";
-import FavoriteSources from "@/widgets/settings/ui/components/favoriteSources/FavoriteSources.vue";
+import FavoriteSources from "@/widgets/settings/ui/components/favoriteSources";
 import DrillDownViewOptions from "@/widgets/settings/ui/components/DrillDownViewOptions";
+import ToggleDevWidget from "@/widgets/settings/ui/components/toggleDevWidget";
+import ColorSchemeSelector from "@/widgets/settings/ui/components/colorScheme";
 
 const store = useStore();
 
@@ -83,4 +86,42 @@ const showMenu = computed({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: bh-reveal 0.35s ease both;
+}
+
+.section-card {
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.section-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+@keyframes bh-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

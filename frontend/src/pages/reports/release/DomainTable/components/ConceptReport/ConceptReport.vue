@@ -3,18 +3,13 @@
     <PageHeader :title="title">
       <template #action>
         <div class="flex flex-row gap-2">
-          <Button
-            size="small"
-            style="width: 180px; height: 30px"
+          <button
             @click="navigateToNetworkConcept"
+            class="network-btn inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-md transition-all duration-150 cursor-pointer whitespace-nowrap"
           >
-            <svg-icon
-              class="text-white"
-              type="mdi"
-              :path="mdiCheckNetwork"
-            ></svg-icon>
-            <span class="text-white uppercase text-base">Network Report</span>
-          </Button>
+            <svg-icon type="mdi" :path="mdiCheckNetwork" />
+            <span>Network Report</span>
+          </button>
         </div>
       </template>
     </PageHeader>
@@ -59,25 +54,25 @@
 import { useRoute, useRouter } from "vue-router";
 import { computed } from "vue";
 import { useStore } from "vuex";
-import MeasurementValueDistribution from "./charts/MeasurementValueDistribution/MeasurementValueDistribution.vue";
-import AgeAtFirstDiagnosis from "./charts/AgeAtFirstDiagnosis/AgeAtFirstDiagnosis.vue";
-import AgeAtFirstExposure from "./charts/AgeAtFirstExposure/AgeAtFirstExposure.vue";
-import LengthOfEra from "./charts/LengthOfEra/LengthOfEra.vue";
-import ConditionsByType from "./charts/ConditionsByType/ConditionsByType.vue";
-import DrugsByType from "./charts/DrugsByType/DrugsByType.vue";
-import RecordsByUnit from "./charts/RecordsByUnit/RecordsByUnit.vue";
-import MeasurementsByType from "./charts/MeasurementsByType/MeasurementsByType.vue";
-import AgeAtFirstOccurrence from "./charts/AgeAtFirstOccurrence/AgeAtFirstOccurrence.vue";
-import RecordCountProportionByMonth from "./charts/RecordsCountProportionByMonth/RecordCountProportionByMonth.vue";
-import DaysSupply from "./charts/DaysSupply/DaysSupply.vue";
-import QuantityDistribution from "./charts/QuantityDistribution/QuantityDistribution.vue";
-import VisitDurationByType from "./charts/VisitDurationByType/VisitDurationByType.vue";
-import RecordCountProportionByAgeSexYear from "./charts/RecordCountProportionByAgeSexYear/RecordCountProportionByAgeSexYear.vue";
+
+import MeasurementValueDistribution from "./charts/MeasurementValueDistribution";
+import AgeAtFirstDiagnosis from "./charts/AgeAtFirstDiagnosis";
+import AgeAtFirstExposure from "./charts/AgeAtFirstExposure";
+import LengthOfEra from "./charts/LengthOfEra";
+import ConditionsByType from "./charts/ConditionsByType";
+import DrugsByType from "./charts/DrugsByType";
+import RecordsByUnit from "./charts/RecordsByUnit";
+import MeasurementsByType from "./charts/MeasurementsByType";
+import AgeAtFirstOccurrence from "./charts/AgeAtFirstOccurrence";
+import RecordCountProportionByMonth from "./charts/RecordsCountProportionByMonth";
+import DaysSupply from "./charts/DaysSupply";
+import QuantityDistribution from "./charts/QuantityDistribution";
+import VisitDurationByType from "./charts/VisitDurationByType";
+import RecordCountProportionByAgeSexYear from "./charts/RecordCountProportionByAgeSexYear";
 import InfoPanel from "@/widgets/infoPanel";
-import PageHeader from "@/entities/pageHeader/PageHeader.vue";
+import PageHeader from "@/shared/ui/pageHeader";
 import { mdiCheckNetwork } from "@mdi/js";
-import SvgIcon from "@jamescoyle/vue-icon";
-import Button from "primevue/button";
+import SvgIcon from "@/shared/ui/svgIcon";
 
 const route = useRoute();
 const router = useRouter();
@@ -116,5 +111,15 @@ const navigateToNetworkConcept = function () {
 <style scoped>
 .viz-container {
   width: 90%;
+}
+.network-btn {
+  border: 1px solid var(--color-primary-ghost-border);
+  color: var(--color-primary-ghost-text);
+  background: var(--color-primary-ghost-bg);
+}
+.network-btn:hover {
+  border-color: var(--color-primary-ghost-border-hover);
+  color: var(--color-primary-ghost-text-hover);
+  background: var(--color-primary-ghost-bg-hover);
 }
 </style>

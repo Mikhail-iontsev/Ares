@@ -1,10 +1,12 @@
 <template>
-  <div class="flex flex-row gap-5">
-    <InputSwitch v-model="strippedRows" />
+  <div class="flex flex-row items-center justify-between">
     <div>
-      <h3 class="text-lg leading-none">Stripped rows</h3>
-      <p class="font-light">Render alternating table rows in different color</p>
+      <p class="text-base font-medium leading-none">Striped rows</p>
+      <p class="setting-desc">
+        Render alternating table rows in different color
+      </p>
     </div>
+    <InputSwitch v-model="strippedRows" />
   </div>
 </template>
 
@@ -32,4 +34,10 @@ const strippedRows = computed({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.setting-desc {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+</style>

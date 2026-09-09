@@ -1,17 +1,29 @@
 <template>
+  <router-view name="reportsView" v-slot="{ Component }">
+    <Transition name="page-fade">
+      <div
+        v-if="
+          !store.getters.getErrors &&
+          loaderState === 'idle' &&
+          store.getters.dataInStore
+        "
+        class="mt-10 mb-16"
+      >
+        <component :is="Component" />
+      </div>
+    </Transition>
+  </router-view>
   <div
-    v-if="!store.getters.getErrors && store.getters.dataInStore"
-    class="mt-10 mb-16"
-  >
-    <router-view name="reportsView" />
-  </div>
-  <div
-    v-if="!store.getters.dataInStore && !store.getters.getErrors"
+    v-if="loaderState !== 'idle' && !store.getters.getErrors"
     class="flex flex-col gap-2 justify-center items-center content-center h-[70vh]"
   >
-    <ProgressCircle />
+    <BlackHoleLoader
+      :escalate="true"
+      text="Fetching..."
+      size="lg"
+      :state="loaderState"
+    />
   </div>
-  <BottomNav />
 
   <!-- Conditional components />-->
   <Snackbar />
@@ -32,28 +44,51 @@ import { Error } from "@/widgets/error";
 import { Explorer, explorerActions } from "@/widgets/explorer";
 import { Settings } from "@/widgets/settings";
 import { Snackbar } from "@/widgets/snackbar";
-import BottomNav from "@/widgets/bottomNav";
 
 import { RESET_DATA_STORAGE } from "../model/store/actions.type";
 import getFilesByView from "../config/dataLoadConfig";
 
 import { useStore } from "vuex";
 
-import { watch, computed, onMounted } from "vue";
+import { watch, computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import { isNavigating } from "@/app/providers/router/navigationState";
 import {
   LOAD_API_NOTES,
   LOAD_NOTES,
 } from "@/widgets/notesPanel/model/store/actions.type";
 import getDuckDBTables from "@/shared/api/duckdb/conceptTables";
 import { SET_DIALOG } from "@/widgets/notesPanel/model/store/mutations.type";
-import SelectionEditDialog from "@/widgets/selectionEditDialog/ui/selectionEditDialog.vue";
-import ProgressCircle from "@/entities/ProgressCircle.vue";
+import SelectionEditDialog from "@/widgets/selectionEditDialog";
 import environment from "@/shared/api/environment";
 import { pageCharts } from "@/processes/exploreReports/config/pageCharts";
+import BlackHoleLoader from "@/shared/ui/blackHoleLoader";
 
 const route = useRoute();
 const store = useStore();
+
+const loaderState = ref(store.getters.dataInStore ? "idle" : "loading");
+let loadStart = Date.now();
+
+watch(
+  () => store.getters.dataInStore,
+  async (val) => {
+    if (val) {
+      if (Date.now() - loadStart >= 600) {
+        loaderState.value = "success";
+        await new Promise((r) => setTimeout(r, 1100));
+      }
+      loaderState.value = "idle";
+    } else {
+      // When route name changes, :key="route.name" remounts this component and the
+      // new instance initialises its own loader state. Skip here to avoid a brief
+      // flash in the outgoing instance during its leave transition.
+      if (isNavigating.value) return;
+      loadStart = Date.now();
+      loaderState.value = "loading";
+    }
+  },
+);
 
 const path = computed(function () {
   return JSON.stringify({
@@ -85,7 +120,6 @@ const loadViewData = function () {
 };
 
 watch(path, () => {
-  store.dispatch(RESET_DATA_STORAGE);
   if (!useAnnotationsBackend) {
     store.dispatch(LOAD_NOTES);
   } else {
@@ -111,4 +145,20 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.page-fade-leave-active {
+  transition: opacity 0.12s ease;
+}
+.page-fade-enter-active {
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
+}
+.page-fade-enter-from {
+  transform: scale(0.97);
+}
+</style>

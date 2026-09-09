@@ -1,4 +1,4 @@
-import { kmbFormatter } from "@/widgets/echarts/lib/formatters";
+import { kmbFormatter } from "@/shared/lib/formatters";
 
 export default function getEChartsOptionYearOfBirth({
   zeroBaseline = false,
@@ -8,10 +8,6 @@ export default function getEChartsOptionYearOfBirth({
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },
-    },
-    legend: {
-      top: "top",
-      data: ["Male", "Female"],
     },
     grid: {
       left: 50,
