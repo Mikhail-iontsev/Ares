@@ -68,7 +68,7 @@ jobs:
 
       - name: Generate SBOM
         working-directory: ./frontend
-        run: pnpm sbom --format cyclonedx --out ../sbom.cdx.json --prod
+        run: pnpm sbom --sbom-format cyclonedx --out ../sbom.cdx.json --prod
 
       - name: Attest SBOM
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26  # v4.1.0
