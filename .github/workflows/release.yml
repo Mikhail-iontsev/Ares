@@ -87,9 +87,10 @@ jobs:
           REPO: ${{ github.repository }}
           VERSION: ${{ steps.version.outputs.value }}
         run: |
-          gh attestation download "ares-${VERSION}.zip" \
-            --repo "${REPO}" \
-            --output-dir attestations/
+          mkdir -p attestations
+          cd attestations
+          gh attestation download "../ares-${VERSION}.zip" \
+            --repo "${REPO}"
 
       - name: Create release
         env:
@@ -98,9 +99,12 @@ jobs:
           VERSION: ${{ steps.version.outputs.value }}
         run: |
           printf '%s' "${PR_BODY}" > release-notes.txt
+          for f in attestations/sha256:*.jsonl; do
+            mv "$f" "${f/:/-}"
+          done
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \
             --notes-file release-notes.txt \
             "ares-${VERSION}.zip" \
             "sbom.cdx.json#sbom-cyclonedx.json" \
-            attestations/*.sigstore.json
+            attestations/*.jsonl
